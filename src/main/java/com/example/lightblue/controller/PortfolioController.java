@@ -5,6 +5,7 @@ import com.example.lightblue.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,12 +36,14 @@ public class PortfolioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
     public ResponseEntity<Portfolio> updatePortfolio(@PathVariable Long id, @RequestBody Portfolio portfolioDetails) {
         Portfolio updatedPortfolio = portfolioService.updatePortfolio(id, portfolioDetails);
         return new ResponseEntity<>(updatedPortfolio, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
     public ResponseEntity<Void> deletePortfolio(@PathVariable Long id) {
         portfolioService.deletePortfolio(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
