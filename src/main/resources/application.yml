@@ -1,8 +1,6 @@
 spring:
   config:
     import: "optional:env[.properties]"
-  server:
-    port: 8080
   datasource:
     url: jdbc:mysql://${DEFAULT_URL}:3306/${DEFAULT_SCHEMA}?serverTimezone=UTC
     username: ${DB_USERNAME}
@@ -28,3 +26,6 @@ application:
     jwt:
       secret-key: ${JWT_SECRET}
       expiration: 86400000 # 24 hours
+
+server:
+  port: 8080
