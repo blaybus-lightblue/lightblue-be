@@ -20,6 +20,11 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/",                  // health check 용
+                                "/swagger-ui/**",     // Swagger UI
+                                "/v3/api-docs/**"     // Swagger OpenAPI
+                        ).permitAll()
                         .anyRequest().authenticated()
                 );
 
