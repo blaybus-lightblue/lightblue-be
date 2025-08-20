@@ -41,3 +41,5 @@ out/
 .env.local
 .env.production
 .env.staging
+
+*.jar
