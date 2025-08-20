@@ -16,6 +16,16 @@ spring:
     show_sql: true
   jackson:
     time-zone: Asia/Seoul
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.example.lightblue: DEBUG
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET}
+      expiration: 86400000 # 24 hours
 
 server:
   port: 8080
