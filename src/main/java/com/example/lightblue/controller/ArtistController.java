@@ -4,11 +4,14 @@ import com.example.lightblue.dto.ArtistDTO;
 import com.example.lightblue.model.Artist;
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.service.ArtistService;
+import com.example.lightblue.dto.PortfolioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,18 +63,18 @@ public class ArtistController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/{artistId}/portfolios")
+    @PostMapping(value = "/{artistId}/portfolios", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<Portfolio> addPortfolioToArtist(@PathVariable Long artistId, @RequestBody Portfolio portfolio) {
-        Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, portfolio);
+    public ResponseEntity<Portfolio> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, portfolioRequest, files);
         return new ResponseEntity<>(createdPortfolio, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{artistId}/portfolios/{portfolioId}")
+    @PutMapping(value = "/{artistId}/portfolios/{portfolioId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<Portfolio> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestBody Portfolio portfolioDetails) {
+    public ResponseEntity<Portfolio> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         // Ensure the portfolio belongs to the artist if needed, or handle in service
-        Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, portfolioDetails);
+        Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, portfolioRequest, files);
         return new ResponseEntity<>(updatedPortfolio, HttpStatus.OK);
     }
 

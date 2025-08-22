@@ -33,7 +33,8 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Portfolio not found with id " + id));
         portfolio.setUrl(portfolioDetails.getUrl());
-        portfolio.setArtist(portfolioDetails.getArtist()); // Assuming artist can be updated or is set correctly
+        // Assuming artist can be updated or is set correctly, if not, remove this line
+        // portfolio.setArtist(portfolioDetails.getArtist());
         return portfolioRepository.save(portfolio);
     }
 
