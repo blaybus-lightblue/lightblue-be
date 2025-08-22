@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: lightblue_db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lightblue-be
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/lightblue_db?serverTimezone=UTC # Replace with your database
+      SPRING_DATASOURCE_USERNAME: test # Replace with your username
+      SPRING_DATASOURCE_PASSWORD: test # Replace with your password
+      APPLICATION_SECURITY_JWT_SECRET_KEY: your_jwt_secret_key_here # Replace with a strong secret key
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
