@@ -43,4 +43,25 @@ public class AuthService {
         var jwtToken = jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
     }
+
+    public Account registerOrUpdateOAuth2User(String email, String nickname, String profileImage) {
+        return repository.findByUsername(email)
+                .map(account -> {
+                    // Update existing user if needed
+                    // account.setNickname(nickname);
+                    // account.setProfileImage(profileImage);
+                    return repository.save(account);
+                })
+                .orElseGet(() -> {
+                    // Register new user
+                    var newUser = new Account(
+                            email, // Using email as username for OAuth2 users
+                            passwordEncoder.encode("oauth2_user"), // Dummy password for OAuth2 users
+                            "USER" // Default type for social users
+                    );
+                    // newUser.setNickname(nickname);
+                    // newUser.setProfileImage(profileImage);
+                    return repository.save(newUser);
+                });
+    }
 }
