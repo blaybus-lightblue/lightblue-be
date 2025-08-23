@@ -24,6 +24,30 @@ public class Artist {
     @Column(nullable = false)
     private String name;
 
+    @Column
+    private String phone;
+
+    @Column
+    private String email;
+
+    @Column
+    private Integer career;
+
+    @Column
+    private String jobField;
+
+    @Column
+    private String activityArea;
+
+    @Column
+    private String activityField;
+
+    @Column
+    private String desiredCollaborationField;
+
+    @Column
+    private String introduction;
+
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Portfolio> portfolios;
 }

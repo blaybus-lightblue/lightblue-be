@@ -22,4 +22,13 @@ public class Company {
 
     @Column(nullable = false)
     private String name;
+
+    @Column
+    private String email;
+
+    @Column
+    private String phone;
+
+    @Column(length = 1000)
+    private String description;
 }
