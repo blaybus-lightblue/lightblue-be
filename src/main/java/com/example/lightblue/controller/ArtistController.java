@@ -4,6 +4,7 @@ import com.example.lightblue.dto.ArtistCreateRequest;
 import com.example.lightblue.dto.ArtistDTO;
 import com.example.lightblue.dto.ArtistUpdateRequest;
 import com.example.lightblue.dto.PortfolioDTO;
+import com.example.lightblue.global.ApiResponse;
 import com.example.lightblue.model.Artist;
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.service.ArtistService;
@@ -27,66 +28,67 @@ public class ArtistController {
     private ArtistService artistService;
 
     @GetMapping
-    public List<ArtistDTO> getAllArtists() {
-        return artistService.getAllArtists().stream()
+    public ResponseEntity<ApiResponse<List<ArtistDTO>>> getAllArtists() {
+        List<ArtistDTO> artistDTOs = artistService.getAllArtists().stream()
                 .map(ArtistDTO::new)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.onSuccess(artistDTOs));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ArtistDTO> getArtistById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ArtistDTO>> getArtistById(@PathVariable Long id) {
         return artistService.getArtistById(id)
-                .map(artist -> new ResponseEntity<>(new ArtistDTO(artist), HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(artist -> ResponseEntity.ok(ApiResponse.onSuccess(new ArtistDTO(artist))))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<ArtistDTO> createArtist(@RequestBody ArtistCreateRequest artistRequest) {
+    public ResponseEntity<ApiResponse<ArtistDTO>> createArtist(@RequestBody ArtistCreateRequest artistRequest) {
         Artist createdArtist = artistService.createArtist(artistRequest);
-        return new ResponseEntity<>(new ArtistDTO(createdArtist), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onSuccess(new ArtistDTO(createdArtist)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
-    public ResponseEntity<ArtistDTO> updateArtist(@PathVariable Long id, @RequestBody ArtistUpdateRequest artistDetails) {
+    public ResponseEntity<ApiResponse<ArtistDTO>> updateArtist(@PathVariable Long id, @RequestBody ArtistUpdateRequest artistDetails) {
         Artist updatedArtist = artistService.updateArtist(id, artistDetails);
-        return new ResponseEntity<>(new ArtistDTO(updatedArtist), HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.onSuccess(new ArtistDTO(updatedArtist)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
-    public ResponseEntity<Void> deleteArtist(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteArtist(@PathVariable Long id) {
         artistService.deleteArtist(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(ApiResponse.onSuccess(null));
     }
 
     // Portfolio related endpoints
     @GetMapping("/{artistId}/portfolios")
-    public List<PortfolioDTO> getPortfoliosByArtistId(@PathVariable Long artistId) {
-        return artistService.getPortfoliosByArtistId(artistId).stream()
+    public ResponseEntity<ApiResponse<List<PortfolioDTO>>> getPortfoliosByArtistId(@PathVariable Long artistId) {
+        List<PortfolioDTO> portfolioDTOs = artistService.getPortfoliosByArtistId(artistId).stream()
                 .map(PortfolioDTO::new)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.onSuccess(portfolioDTOs));
     }
 
     @PostMapping(value = "/{artistId}/portfolios", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<PortfolioDTO> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+    public ResponseEntity<ApiResponse<PortfolioDTO>> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, portfolioRequest, files);
-        return new ResponseEntity<>(new PortfolioDTO(createdPortfolio), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onSuccess(new PortfolioDTO(createdPortfolio)));
     }
 
     @PutMapping(value = "/{artistId}/portfolios/{portfolioId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<PortfolioDTO> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-        // Ensure the portfolio belongs to the artist if needed, or handle in service
+    public ResponseEntity<ApiResponse<PortfolioDTO>> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, portfolioRequest, files);
-        return new ResponseEntity<>(new PortfolioDTO(updatedPortfolio), HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.onSuccess(new PortfolioDTO(updatedPortfolio)));
     }
 
     @DeleteMapping("/{artistId}/portfolios/{portfolioId}")
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<Void> deletePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId) {
+    public ResponseEntity<ApiResponse<Void>> deletePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId) {
         artistService.deletePortfolio(portfolioId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(ApiResponse.onSuccess(null));
     }
 }
