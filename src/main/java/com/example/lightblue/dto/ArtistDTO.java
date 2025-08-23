@@ -1,21 +1,37 @@
 package com.example.lightblue.dto;
 
 import com.example.lightblue.model.Artist;
-import com.example.lightblue.model.Portfolio;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ArtistDTO {
     private Long id;
+    private Long accountId;
     private String name;
+    private String phone;
+    private String email;
+    private Integer career;
+    private String jobField;
+    private String activityArea;
+    private String activityField;
+    private String desiredCollaborationField;
+    private String introduction;
     private List<PortfolioDTO> portfolios;
 
     public ArtistDTO(Artist artist) {
         this.id = artist.getId();
+        this.accountId = artist.getAccount().getId();
         this.name = artist.getName();
+        this.phone = artist.getPhone();
+        this.email = artist.getEmail();
+        this.career = artist.getCareer();
+        this.jobField = artist.getJobField();
+        this.activityArea = artist.getActivityArea();
+        this.activityField = artist.getActivityField();
+        this.desiredCollaborationField = artist.getDesiredCollaborationField();
+        this.introduction = artist.getIntroduction();
         this.portfolios = artist.getPortfolios().stream()
-                .map(PortfolioDTO::new)
+                .map(PortfolioDTO::new) // This will now use the top-level PortfolioDTO
                 .collect(Collectors.toList());
     }
 
@@ -24,30 +40,47 @@ public class ArtistDTO {
         return id;
     }
 
+    public Long getAccountId() {
+        return accountId;
+    }
+
     public String getName() {
         return name;
     }
 
-    public List<PortfolioDTO> getPortfolios() {
-        return portfolios;
+    public String getPhone() {
+        return phone;
     }
 
-    public static class PortfolioDTO {
-        private Long id;
-        private String url;
+    public String getEmail() {
+        return email;
+    }
 
-        public PortfolioDTO(Portfolio portfolio) {
-            this.id = portfolio.getId();
-            this.url = portfolio.getUrl();
-        }
+    public Integer getCareer() {
+        return career;
+    }
 
-        // Getters
-        public Long getId() {
-            return id;
-        }
+    public String getJobField() {
+        return jobField;
+    }
 
-        public String getUrl() {
-            return url;
-        }
+    public String getActivityArea() {
+        return activityArea;
+    }
+
+    public String getActivityField() {
+        return activityField;
+    }
+
+    public String getDesiredCollaborationField() {
+        return desiredCollaborationField;
+    }
+
+    public String getIntroduction() {
+        return introduction;
+    }
+
+    public List<PortfolioDTO> getPortfolios() {
+        return portfolios;
     }
 }

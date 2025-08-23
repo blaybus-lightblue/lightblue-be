@@ -1,8 +1,12 @@
 package com.example.lightblue.service;
 
+import com.example.lightblue.dto.ArtistCreateRequest;
+import com.example.lightblue.dto.ArtistUpdateRequest;
+import com.example.lightblue.model.Account;
 import com.example.lightblue.model.Artist;
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.model.PortfolioFile;
+import com.example.lightblue.repository.AccountRepository;
 import com.example.lightblue.repository.ArtistRepository;
 import com.example.lightblue.repository.PortfolioRepository;
 import com.example.lightblue.repository.PortfolioFileRepository;
@@ -29,6 +33,9 @@ public class ArtistService {
     private ArtistRepository artistRepository;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private PortfolioRepository portfolioRepository;
 
     @Autowired
@@ -43,16 +50,37 @@ public class ArtistService {
     }
 
     @Transactional
-    public Artist createArtist(Artist artist) {
+    public Artist createArtist(ArtistCreateRequest artistDetails) {
+        Account account = accountRepository.findById(artistDetails.getAccountId())
+                .orElseThrow(() -> new RuntimeException("Account not found with id " + artistDetails.getAccountId()));
+
+        Artist artist = new Artist();
+        artist.setAccount(account);
+        artist.setName(artistDetails.getName());
+        artist.setPhone(artistDetails.getPhone());
+        artist.setEmail(artistDetails.getEmail());
+        artist.setCareer(artistDetails.getCareer());
+        artist.setJobField(artistDetails.getJobField());
+        artist.setActivityArea(artistDetails.getActivityArea());
+        artist.setActivityField(artistDetails.getActivityField());
+        artist.setDesiredCollaborationField(artistDetails.getDesiredCollaborationField());
+        artist.setIntroduction(artistDetails.getIntroduction());
         return artistRepository.save(artist);
     }
 
     @Transactional
-    public Artist updateArtist(Long id, Artist artistDetails) {
+    public Artist updateArtist(Long id, ArtistUpdateRequest artistDetails) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found with id " + id));
         artist.setName(artistDetails.getName());
-        artist.setAccount(artistDetails.getAccount()); // Assuming account can be updated or is set correctly
+        artist.setPhone(artistDetails.getPhone());
+        artist.setEmail(artistDetails.getEmail());
+        artist.setCareer(artistDetails.getCareer());
+        artist.setJobField(artistDetails.getJobField());
+        artist.setActivityArea(artistDetails.getActivityArea());
+        artist.setActivityField(artistDetails.getActivityField());
+        artist.setDesiredCollaborationField(artistDetails.getDesiredCollaborationField());
+        artist.setIntroduction(artistDetails.getIntroduction());
         return artistRepository.save(artist);
     }
 

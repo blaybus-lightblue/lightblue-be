@@ -1,6 +1,9 @@
 package com.example.lightblue.controller;
 
+import com.example.lightblue.dto.ArtistCreateRequest;
 import com.example.lightblue.dto.ArtistDTO;
+import com.example.lightblue.dto.ArtistUpdateRequest;
+import com.example.lightblue.dto.PortfolioDTO;
 import com.example.lightblue.model.Artist;
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.service.ArtistService;
@@ -24,8 +27,10 @@ public class ArtistController {
     private ArtistService artistService;
 
     @GetMapping
-    public List<Artist> getAllArtists() {
-        return artistService.getAllArtists();
+    public List<ArtistDTO> getAllArtists() {
+        return artistService.getAllArtists().stream()
+                .map(ArtistDTO::new)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -36,16 +41,16 @@ public class ArtistController {
     }
 
     @PostMapping
-    public ResponseEntity<Artist> createArtist(@RequestBody Artist artist) {
-        Artist createdArtist = artistService.createArtist(artist);
-        return new ResponseEntity<>(createdArtist, HttpStatus.CREATED);
+    public ResponseEntity<ArtistDTO> createArtist(@RequestBody ArtistCreateRequest artistRequest) {
+        Artist createdArtist = artistService.createArtist(artistRequest);
+        return new ResponseEntity<>(new ArtistDTO(createdArtist), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
-    public ResponseEntity<Artist> updateArtist(@PathVariable Long id, @RequestBody Artist artistDetails) {
+    public ResponseEntity<ArtistDTO> updateArtist(@PathVariable Long id, @RequestBody ArtistUpdateRequest artistDetails) {
         Artist updatedArtist = artistService.updateArtist(id, artistDetails);
-        return new ResponseEntity<>(updatedArtist, HttpStatus.OK);
+        return new ResponseEntity<>(new ArtistDTO(updatedArtist), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -57,25 +62,25 @@ public class ArtistController {
 
     // Portfolio related endpoints
     @GetMapping("/{artistId}/portfolios")
-    public List<ArtistDTO.PortfolioDTO> getPortfoliosByArtistId(@PathVariable Long artistId) {
+    public List<PortfolioDTO> getPortfoliosByArtistId(@PathVariable Long artistId) {
         return artistService.getPortfoliosByArtistId(artistId).stream()
-                .map(ArtistDTO.PortfolioDTO::new)
+                .map(PortfolioDTO::new)
                 .collect(Collectors.toList());
     }
 
     @PostMapping(value = "/{artistId}/portfolios", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<Portfolio> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+    public ResponseEntity<PortfolioDTO> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, portfolioRequest, files);
-        return new ResponseEntity<>(createdPortfolio, HttpStatus.CREATED);
+        return new ResponseEntity<>(new PortfolioDTO(createdPortfolio), HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{artistId}/portfolios/{portfolioId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
-    public ResponseEntity<Portfolio> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+    public ResponseEntity<PortfolioDTO> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         // Ensure the portfolio belongs to the artist if needed, or handle in service
         Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, portfolioRequest, files);
-        return new ResponseEntity<>(updatedPortfolio, HttpStatus.OK);
+        return new ResponseEntity<>(new PortfolioDTO(updatedPortfolio), HttpStatus.OK);
     }
 
     @DeleteMapping("/{artistId}/portfolios/{portfolioId}")
