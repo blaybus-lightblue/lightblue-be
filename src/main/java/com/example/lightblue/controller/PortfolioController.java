@@ -42,6 +42,7 @@ public class PortfolioController {
         return new ResponseEntity<>(updatedPortfolio, HttpStatus.OK);
     }
 
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST')")
     public ResponseEntity<Void> deletePortfolio(@PathVariable Long id) {
