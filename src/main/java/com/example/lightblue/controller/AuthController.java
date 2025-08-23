@@ -11,14 +11,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "인증 관련 API")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/register")
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     public ResponseEntity<AuthResponse> register(
             @RequestBody RegisterRequest request
     ) {
@@ -26,6 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "로그인", description = "기존 사용자로 로그인합니다.")
     public ResponseEntity<AuthResponse> login(
             @RequestBody LoginRequest request
     ) {
