@@ -8,7 +8,7 @@ import com.example.lightblue.global.ApiResponse;
 import com.example.lightblue.model.Artist;
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.service.ArtistService;
-import com.example.lightblue.dto.PortfolioRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +29,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/artists")
 @Tag(name = "Artist", description = "아티스트 관련 API")
+@RequiredArgsConstructor
 public class ArtistController {
 
-    @Autowired
-    private ArtistService artistService;
+    private final ArtistService artistService;
 
     @GetMapping
     @Operation(summary = "아티스트 검색", description = "활동 분야, 경력, 포트폴리오 유무로 아티스트를 검색합니다.")
@@ -90,16 +90,16 @@ public class ArtistController {
     @PostMapping(value = "/{artistId}/portfolios", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
     @Operation(summary = "아티스트에게 포트폴리오 추가", description = "특정 아티스트에게 새로운 포트폴리오를 추가합니다.")
-    public ResponseEntity<ApiResponse<PortfolioDTO>> addPortfolioToArtist(@PathVariable Long artistId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-        Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, portfolioRequest, files);
+    public ResponseEntity<ApiResponse<PortfolioDTO>> addPortfolioToArtist(@PathVariable Long artistId, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        Portfolio createdPortfolio = artistService.addPortfolioToArtist(artistId, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onSuccess(new PortfolioDTO(createdPortfolio)));
     }
 
     @PutMapping(value = "/{artistId}/portfolios/{portfolioId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('ARTIST')")
     @Operation(summary = "아티스트 포트폴리오 수정", description = "특정 아티스트의 포트폴리오를 수정합니다.")
-    public ResponseEntity<ApiResponse<PortfolioDTO>> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestPart("portfolioRequest") PortfolioRequest portfolioRequest, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-        Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, portfolioRequest, files);
+    public ResponseEntity<ApiResponse<PortfolioDTO>> updatePortfolio(@PathVariable Long artistId, @PathVariable Long portfolioId, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        Portfolio updatedPortfolio = artistService.updatePortfolio(portfolioId, files);
         return ResponseEntity.ok(ApiResponse.onSuccess(new PortfolioDTO(updatedPortfolio)));
     }
 

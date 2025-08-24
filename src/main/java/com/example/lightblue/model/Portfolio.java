@@ -23,9 +23,6 @@ public class Portfolio {
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
 
-    @Column(nullable = true) // url is now optional
-    private String url;
-
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PortfolioFile> files = new ArrayList<>();
 

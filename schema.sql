@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS `artist` (
 CREATE TABLE IF NOT EXISTS `portfolio` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `artist_id` INT NOT NULL,
-    `url` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
