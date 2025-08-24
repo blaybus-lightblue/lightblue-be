@@ -10,6 +10,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final NaverOauth2Service naverOauth2Service;
 
     public AuthResponse register(RegisterRequest request) {
         var user = new Account(
@@ -42,6 +46,25 @@ public class AuthService {
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
+    }
+
+    public void logout(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.addToBlacklist(token);
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Account) {
+            Account account = (Account) authentication.getPrincipal();
+            String naverAccessToken = account.getNaverAccessToken();
+
+            if (naverAccessToken != null && !naverAccessToken.isEmpty()) {
+                naverOauth2Service.revokeToken(naverAccessToken);
+                account.setNaverAccessToken(null);
+                repository.save(account);
+            }
+        }
     }
 
     public Account registerOrUpdateOAuth2User(String email, String nickname, String profileImage) {

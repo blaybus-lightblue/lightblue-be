@@ -23,6 +23,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -42,6 +45,7 @@ public class SecurityConfig {
 
     private final AccountRepository accountRepository;
     private final JwtService jwtService;
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -70,28 +74,43 @@ public class SecurityConfig {
     @Bean
     public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
         return (request, response, authentication) -> {
-            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+            String clientRegistrationId = oauthToken.getAuthorizedClientRegistrationId();
 
-            String email = null;
-            Map<String, Object> attributes = oAuth2User.getAttributes();
+            if ("naver".equals(clientRegistrationId)) {
+                OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+                        clientRegistrationId,
+                        authentication.getName()
+                );
 
-            if (attributes.containsKey("response")) { // Naver
-                Map<String, Object> responseMap = (Map<String, Object>) attributes.get("response");
-                email = (String) responseMap.get("email");
-            } else { // Google
-                email = (String) attributes.get("email");
+                String accessToken = client.getAccessToken().getTokenValue();
+
+                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+                String email = null;
+                Map<String, Object> attributes = oAuth2User.getAttributes();
+
+                if (attributes.containsKey("response")) { // Naver
+                    Map<String, Object> responseMap = (Map<String, Object>) attributes.get("response");
+                    email = (String) responseMap.get("email");
+                } else { // Google
+                    email = (String) attributes.get("email");
+                }
+
+                Account account = accountRepository.findByUsername(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+                account.setNaverAccessToken(accessToken);
+                accountRepository.save(account);
+
+                String token = jwtService.generateToken(account);
+                AuthResponse authResponse = new AuthResponse(token);
+
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(new ObjectMapper().writeValueAsString(authResponse));
+                response.setStatus(HttpServletResponse.SC_OK);
             }
-
-            Account account = accountRepository.findByUsername(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            String token = jwtService.generateToken(account);
-            AuthResponse authResponse = new AuthResponse(token);
-
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(new ObjectMapper().writeValueAsString(authResponse));
-            response.setStatus(HttpServletResponse.SC_OK);
         };
     }
 
