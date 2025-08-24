@@ -7,13 +7,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class PortfolioService {
 
     @Autowired
     private PortfolioRepository portfolioRepository;
 
-    public List<Portfolio> getAllPortfolios() {
-        return portfolioRepository.findAll();
+    public Page<Portfolio> getAllPortfolios(Pageable pageable) {
+        return portfolioRepository.findAll(pageable);
     }
 }

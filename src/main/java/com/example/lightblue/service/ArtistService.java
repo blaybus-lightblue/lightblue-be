@@ -29,6 +29,8 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ArtistService {
@@ -47,7 +49,7 @@ public class ArtistService {
     @Autowired
     private PortfolioFileRepository portfolioFileRepository;
 
-    public List<Artist> searchArtists(String activityArea, Integer career, Boolean hasPortfolios) {
+    public Page<Artist> searchArtists(String activityArea, Integer career, Boolean hasPortfolios, Pageable pageable) {
         return artistRepository.findAll((Specification<Artist>) (root, query, cb) -> {
             Predicate finalPredicate = cb.conjunction(); // Start with a true predicate
 
@@ -68,7 +70,7 @@ public class ArtistService {
             }
 
             return finalPredicate;
-        });
+        }, pageable);
     }
 
     public Optional<Artist> getArtistById(Long id) {
