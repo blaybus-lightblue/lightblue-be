@@ -44,6 +44,10 @@ public enum ErrorStatus implements BaseErrorCode {
     NOTIFICATION_ALREADY_READ(HttpStatus.BAD_REQUEST, "NOTIFICATION4002", "이미 읽음처리 된 알람입니다."),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "RESOURCE4001", "존재하지 않는 리소스입니다."),
 
+    PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "해당 프로젝트를 찾을 수 없습니다."),
+    ARTIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTIST4001", "해당 아티스트를 찾을 수 없습니다."),
+    PROJECT_APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT, "APPLICATION4001", "이미 해당 프로젝트에 지원하였습니다."),
+    PROJECT_APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "APPLICATION4002", "해당 프로젝트 지원을 찾을 수 없습니다."),
 
     IMAGE_FAILED(HttpStatus.BAD_REQUEST,"IMAGE4001","이미지 올리는 것을 실패하였습니다."),
 

@@ -16,6 +16,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "project")
@@ -81,4 +83,7 @@ public class Project extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProjectStatus status = ProjectStatus.RECRUITING;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectApplication> projectApplications = new ArrayList<>();
 }
