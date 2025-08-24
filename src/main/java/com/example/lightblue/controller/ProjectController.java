@@ -1,5 +1,8 @@
 package com.example.lightblue.controller;
 
+import com.example.lightblue.dto.ProjectApplicationDTO;
+import com.example.lightblue.dto.ProjectApplicationStatusUpdateRequest;
+import com.example.lightblue.dto.ProjectApplicationStatusResponse;
 import com.example.lightblue.dto.ProjectCreateRequest;
 import com.example.lightblue.dto.ProjectDTO;
 import com.example.lightblue.dto.ProjectUpdateRequest;
@@ -9,6 +12,7 @@ import com.example.lightblue.model.enums.ArtField;
 import com.example.lightblue.model.enums.City;
 import com.example.lightblue.model.enums.ProjectStatus;
 import com.example.lightblue.model.enums.ProjectType;
+import com.example.lightblue.service.ProjectApplicationService;
 import com.example.lightblue.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +40,7 @@ import java.util.stream.Collectors;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectApplicationService projectApplicationService;
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ARTIST', 'COMPANY')")
@@ -50,6 +55,55 @@ public class ProjectController {
         ProjectDTO projectDTO = new ProjectDTO(project);
         
         return ResponseEntity.ok(ApiResponse.onSuccess(projectDTO));
+    }
+
+    @PostMapping("/{projectId}/apply")
+    @PreAuthorize("hasAuthority('ARTIST')")
+    @Operation(summary = "프로젝트 지원", description = "아티스트가 특정 프로젝트에 지원합니다.")
+    public ResponseEntity<ApiResponse<ProjectApplicationDTO>> applyForProject(
+            @PathVariable Long projectId,
+            Authentication authentication) {
+        Long artistId = getUserIdFromAuthentication(authentication); // Assuming artistId is the same as userId for simplicity
+        ProjectApplicationDTO applicationDTO = projectApplicationService.applyForProject(projectId, artistId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(applicationDTO));
+    }
+
+    @GetMapping("/{projectId}/applications")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COMPANY')") // Only project creator/admin can view applications
+    @Operation(summary = "프로젝트 지원 목록 조회", description = "특정 프로젝트에 대한 모든 지원 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ProjectApplicationDTO>>> getProjectApplications(
+            @PathVariable Long projectId) {
+        List<ProjectApplicationDTO> applications = projectApplicationService.getApplicationsForProject(projectId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(applications));
+    }
+
+    @GetMapping("/my-applications")
+    @PreAuthorize("hasAuthority('ARTIST')")
+    @Operation(summary = "내 프로젝트 지원 목록 조회", description = "현재 아티스트가 지원한 모든 프로젝트 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ProjectApplicationDTO>>> getMyProjectApplications(
+            Authentication authentication) {
+        Long artistId = getUserIdFromAuthentication(authentication);
+        List<ProjectApplicationDTO> applications = projectApplicationService.getApplicationsByArtist(artistId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(applications));
+    }
+
+    @PutMapping("/applications/{applicationId}/status")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COMPANY')")
+    @Operation(summary = "프로젝트 지원 상태 업데이트", description = "특정 프로젝트 지원의 상태를 업데이트합니다 (승인/거절).")
+    public ResponseEntity<ApiResponse<ProjectApplicationDTO>> updateProjectApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestBody ProjectApplicationStatusUpdateRequest request) {
+        ProjectApplicationDTO updatedApplication = projectApplicationService.updateApplicationStatus(applicationId, request.getStatus());
+        return ResponseEntity.ok(ApiResponse.onSuccess(updatedApplication));
+    }
+
+    @GetMapping("/{projectId}/application-status")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COMPANY')")
+    @Operation(summary = "프로젝트 지원 현황 조회", description = "특정 프로젝트의 지원 현황을 조회합니다. 직접 지원자와 추천 지원자를 구분하여 제공합니다.")
+    public ResponseEntity<ApiResponse<ProjectApplicationStatusResponse>> getProjectApplicationStatus(
+            @PathVariable Long projectId) {
+        ProjectApplicationStatusResponse response = projectApplicationService.getProjectApplicationStatus(projectId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(response));
     }
 
     @GetMapping("/{id}")
