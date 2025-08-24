@@ -10,7 +10,6 @@ import com.example.lightblue.repository.AccountRepository;
 import com.example.lightblue.repository.ArtistRepository;
 import com.example.lightblue.repository.PortfolioRepository;
 import com.example.lightblue.repository.PortfolioFileRepository;
-import com.example.lightblue.dto.PortfolioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -152,12 +151,11 @@ public class ArtistService {
     }
 
     @Transactional
-    public Portfolio addPortfolioToArtist(Long artistId, PortfolioRequest portfolioRequest, List<MultipartFile> files) {
+    public Portfolio addPortfolioToArtist(Long artistId, List<MultipartFile> files) {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new RuntimeException("Artist not found with id " + artistId));
 
         Portfolio portfolio = new Portfolio();
-        portfolio.setUrl(portfolioRequest.getUrl());
         portfolio.setArtist(artist);
 
         if (files != null && !files.isEmpty()) {
@@ -177,11 +175,9 @@ public class ArtistService {
     }
 
     @Transactional
-    public Portfolio updatePortfolio(Long portfolioId, PortfolioRequest portfolioRequest, List<MultipartFile> files) {
+    public Portfolio updatePortfolio(Long portfolioId, List<MultipartFile> files) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new RuntimeException("Portfolio not found with id " + portfolioId));
-
-        portfolio.setUrl(portfolioRequest.getUrl());
 
         // Clear existing files and add new ones
         // Delete old files from GCS if they exist

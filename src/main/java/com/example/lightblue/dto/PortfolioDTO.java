@@ -2,6 +2,7 @@ package com.example.lightblue.dto;
 
 import com.example.lightblue.model.Portfolio;
 import com.example.lightblue.model.PortfolioFile;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +15,11 @@ public class PortfolioDTO {
 
     private Long id;
     private Long artistId;
-    private String url;
     private List<PortfolioFileDTO> files;
 
     public PortfolioDTO(Portfolio portfolio) {
         this.id = portfolio.getId();
         this.artistId = portfolio.getArtist().getId();
-        this.url = portfolio.getUrl();
         this.files = portfolio.getFiles().stream()
                 .map(PortfolioFileDTO::new)
                 .collect(Collectors.toList());
@@ -30,6 +29,7 @@ public class PortfolioDTO {
     @Setter
     public static class PortfolioFileDTO {
         private Long id;
+        @Schema(description = "업로드된 파일의 접근 URL")
         private String fileUri;
 
         public PortfolioFileDTO(PortfolioFile file) {
