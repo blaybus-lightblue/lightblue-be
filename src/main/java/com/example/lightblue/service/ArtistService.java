@@ -31,6 +31,8 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.example.lightblue.model.enums.City;
+import com.example.lightblue.model.enums.ProjectType;
 
 @Service
 public class ArtistService {
@@ -49,12 +51,12 @@ public class ArtistService {
     @Autowired
     private PortfolioFileRepository portfolioFileRepository;
 
-    public Page<Artist> searchArtists(String activityArea, Integer career, Boolean hasPortfolios, Pageable pageable) {
+    public Page<Artist> searchArtists(City city, Integer career, Boolean hasPortfolios, Pageable pageable) {
         return artistRepository.findAll((Specification<Artist>) (root, query, cb) -> {
             Predicate finalPredicate = cb.conjunction(); // Start with a true predicate
 
-            if (activityArea != null && !activityArea.isEmpty()) {
-                finalPredicate = cb.and(finalPredicate, cb.equal(root.get("activityArea"), activityArea));
+            if (city != null) { // No need for isEmpty() check for enum
+                finalPredicate = cb.and(finalPredicate, cb.equal(root.get("city"), city));
             }
 
             if (career != null) {
@@ -82,6 +84,15 @@ public class ArtistService {
         Account account = accountRepository.findById(artistDetails.getAccountId())
                 .orElseThrow(() -> new RuntimeException("Account not found with id " + artistDetails.getAccountId()));
 
+        // Check if an Artist already exists for this Account
+        if (account.getArtist() != null) {
+            throw new RuntimeException("Artist already exists for this account.");
+        }
+
+        // Set accountType to ARTIST
+        account.setAccountType("ARTIST");
+        accountRepository.save(account);
+
         Artist artist = new Artist();
         artist.setAccount(account);
         artist.setName(artistDetails.getName());
@@ -89,7 +100,7 @@ public class ArtistService {
         artist.setEmail(artistDetails.getEmail());
         artist.setCareer(artistDetails.getCareer());
         artist.setJobField(artistDetails.getJobField());
-        artist.setActivityArea(artistDetails.getActivityArea());
+        artist.setCity(artistDetails.getCity());
         artist.setActivityField(artistDetails.getActivityField());
         artist.setDesiredCollaborationField(artistDetails.getDesiredCollaborationField());
         artist.setIntroduction(artistDetails.getIntroduction());
@@ -105,7 +116,7 @@ public class ArtistService {
         artist.setEmail(artistDetails.getEmail());
         artist.setCareer(artistDetails.getCareer());
         artist.setJobField(artistDetails.getJobField());
-        artist.setActivityArea(artistDetails.getActivityArea());
+        artist.setCity(artistDetails.getCity());
         artist.setActivityField(artistDetails.getActivityField());
         artist.setDesiredCollaborationField(artistDetails.getDesiredCollaborationField());
         artist.setIntroduction(artistDetails.getIntroduction());
