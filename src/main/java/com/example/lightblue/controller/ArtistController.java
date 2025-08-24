@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,13 +35,13 @@ public class ArtistController {
 
     @GetMapping
     @Operation(summary = "아티스트 검색", description = "활동 분야, 경력, 포트폴리오 유무로 아티스트를 검색합니다.")
-    public ResponseEntity<ApiResponse<List<ArtistDTO>>> searchArtists(
+    public ResponseEntity<ApiResponse<Page<ArtistDTO>>> searchArtists(
             @RequestParam(value = "activityArea", required = false) String activityArea,
             @RequestParam(value = "career", required = false) Integer career,
-            @RequestParam(value = "hasPortfolios", required = false) Boolean hasPortfolios) {
-        List<ArtistDTO> artistDTOs = artistService.searchArtists(activityArea, career, hasPortfolios).stream()
-                .map(ArtistDTO::new)
-                .collect(Collectors.toList());
+            @RequestParam(value = "hasPortfolios", required = false) Boolean hasPortfolios,
+            Pageable pageable) {
+        Page<ArtistDTO> artistDTOs = artistService.searchArtists(activityArea, career, hasPortfolios, pageable)
+                .map(ArtistDTO::new);
         return ResponseEntity.ok(ApiResponse.onSuccess(artistDTOs));
     }
 
