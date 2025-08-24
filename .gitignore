@@ -43,3 +43,6 @@ out/
 .env.staging
 
 *.jar
+
+/src/main/resources/lightblue-key.json
+lightblue-key.json
