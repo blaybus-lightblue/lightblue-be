@@ -34,6 +34,9 @@ import org.springframework.data.domain.Pageable;
 import com.example.lightblue.model.enums.City;
 import com.example.lightblue.model.enums.ProjectType;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @Service
 public class ArtistService {
 
@@ -81,8 +84,14 @@ public class ArtistService {
 
     @Transactional
     public Artist createArtist(ArtistCreateRequest artistDetails) {
-        Account account = accountRepository.findById(artistDetails.getAccountId())
-                .orElseThrow(() -> new RuntimeException("Account not found with id " + artistDetails.getAccountId()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated.");
+        }
+        Long accountId = ((Account) authentication.getPrincipal()).getId();
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id " + accountId));
 
         // Check if an Artist already exists for this Account
         if (account.getArtist() != null) {
