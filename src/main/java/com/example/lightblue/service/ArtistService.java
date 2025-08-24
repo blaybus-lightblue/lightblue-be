@@ -34,13 +34,21 @@ import org.springframework.data.domain.Pageable;
 import com.example.lightblue.model.enums.City;
 import com.example.lightblue.model.enums.ProjectType;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class ArtistService {
 
-    private final String UPLOAD_DIR = "uploads";
+    @Autowired
+    private Storage storage;
+
+    @Value("${gcp.bucket.name}")
+    private String bucketName;
 
     @Autowired
     private ArtistRepository artistRepository;
@@ -176,7 +184,13 @@ public class ArtistService {
         portfolio.setUrl(portfolioRequest.getUrl());
 
         // Clear existing files and add new ones
+        // Delete old files from GCS if they exist
+        portfolio.getFiles().forEach(file -> {
+            String fileName = file.getFileUri().substring(file.getFileUri().lastIndexOf('/') + 1);
+            storage.delete(bucketName, fileName);
+        });
         portfolio.getFiles().clear();
+
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 try {
@@ -193,15 +207,19 @@ public class ArtistService {
     }
 
     public void deletePortfolio(Long portfolioId) {
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found with id " + portfolioId));
+
+        // Delete associated files from GCS
+        portfolio.getFiles().forEach(file -> {
+            String fileName = file.getFileUri().substring(file.getFileUri().lastIndexOf('/') + 1);
+            storage.delete(bucketName, fileName);
+        });
+
         portfolioRepository.deleteById(portfolioId);
     }
 
     private String saveFile(MultipartFile file) throws IOException {
-        Path uploadPath = Paths.get(System.getProperty("user.dir"), UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
         String originalFilename = file.getOriginalFilename();
         String fileExtension = "";
         int dotIndex = originalFilename.lastIndexOf('.');
@@ -210,9 +228,12 @@ public class ArtistService {
         }
 
         String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-        Path filePath = uploadPath.resolve(uniqueFilename);
-        Files.copy(file.getInputStream(), filePath);
+        BlobId blobId = BlobId.of(bucketName, uniqueFilename);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
 
-        return "/" + UPLOAD_DIR + "/" + uniqueFilename;
+        storage.create(blobInfo, file.getBytes());
+
+        // Return the public URL of the uploaded file
+        return String.format("https://storage.googleapis.com/%s/%s", bucketName, uniqueFilename);
     }
 }
