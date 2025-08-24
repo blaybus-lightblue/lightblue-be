@@ -40,6 +40,9 @@ public class Account implements UserDetails {
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Artist artist;
 
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Company company;
+
     public Account(String username, String password, String accountType) {
         this.username = username;
         this.password = password;
