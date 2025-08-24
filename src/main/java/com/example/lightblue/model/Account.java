@@ -37,6 +37,9 @@ public class Account implements UserDetails {
     @Column(name = "account_type", nullable = false)
     private String accountType;
 
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Artist artist;
+
     public Account(String username, String password, String accountType) {
         this.username = username;
         this.password = password;

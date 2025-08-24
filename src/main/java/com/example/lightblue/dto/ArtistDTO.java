@@ -1,5 +1,8 @@
 package com.example.lightblue.dto;
 
+import com.example.lightblue.model.enums.ArtField;
+import com.example.lightblue.model.enums.City;
+import com.example.lightblue.model.enums.ProjectType;
 import com.example.lightblue.model.Artist;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +14,10 @@ public class ArtistDTO {
     private String phone;
     private String email;
     private Integer career;
-    private String jobField;
-    private String activityArea;
-    private String activityField;
-    private String desiredCollaborationField;
+    private ArtField jobField;
+    private City city;
+    private ProjectType activityField;
+    private ProjectType desiredCollaborationField;
     private String introduction;
     private List<PortfolioDTO> portfolios;
 
@@ -26,7 +29,7 @@ public class ArtistDTO {
         this.email = artist.getEmail();
         this.career = artist.getCareer();
         this.jobField = artist.getJobField();
-        this.activityArea = artist.getActivityArea();
+        this.city = artist.getCity();
         this.activityField = artist.getActivityField();
         this.desiredCollaborationField = artist.getDesiredCollaborationField();
         this.introduction = artist.getIntroduction();
@@ -60,19 +63,19 @@ public class ArtistDTO {
         return career;
     }
 
-    public String getJobField() {
+    public ArtField getJobField() {
         return jobField;
     }
 
-    public String getActivityArea() {
-        return activityArea;
+    public City getCity() {
+        return city;
     }
 
-    public String getActivityField() {
+    public ProjectType getActivityField() {
         return activityField;
     }
 
-    public String getDesiredCollaborationField() {
+    public ProjectType getDesiredCollaborationField() {
         return desiredCollaborationField;
     }
 

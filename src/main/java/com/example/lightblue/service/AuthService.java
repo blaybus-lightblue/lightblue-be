@@ -24,7 +24,7 @@ public class AuthService {
         var user = new Account(
                 request.getUsername(),
                 passwordEncoder.encode(request.getPassword()),
-                request.getAccountType()
+                "NORMAL"
         );
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -57,7 +57,7 @@ public class AuthService {
                     var newUser = new Account(
                             email, // Using email as username for OAuth2 users
                             passwordEncoder.encode("oauth2_user"), // Dummy password for OAuth2 users
-                            "USER" // Default type for social users
+                            "NORMAL" // Default type for social users
                     );
                     // newUser.setNickname(nickname);
                     // newUser.setProfileImage(profileImage);

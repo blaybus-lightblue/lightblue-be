@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS `artist` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `account_id` INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
+    `job_field` VARCHAR(255),
+    `city` VARCHAR(255),
+    `activity_field` VARCHAR(255),
+    `desired_collaboration_field` VARCHAR(255),
     PRIMARY KEY (`id`)
 );
 

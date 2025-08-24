@@ -1,5 +1,8 @@
 package com.example.lightblue.model;
 
+import com.example.lightblue.model.enums.ArtField;
+import com.example.lightblue.model.enums.City;
+import com.example.lightblue.model.enums.ProjectType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,17 +36,21 @@ public class Artist {
     @Column
     private Integer career;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String jobField;
+    private ArtField jobField;
 
-    @Column
-    private String activityArea;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "city")
+    private City city;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String activityField;
+    private ProjectType activityField;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String desiredCollaborationField;
+    private ProjectType desiredCollaborationField;
 
     @Column
     private String introduction;
