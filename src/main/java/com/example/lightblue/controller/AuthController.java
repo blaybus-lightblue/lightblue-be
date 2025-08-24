@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,5 +37,12 @@ public class AuthController {
             @RequestBody LoginRequest request
     ) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "사용자 로그아웃을 처리합니다.")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        authService.logout(authHeader);
+        return ResponseEntity.ok().build();
     }
 }
