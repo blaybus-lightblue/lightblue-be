@@ -32,9 +32,12 @@ public class ArtistController {
     private ArtistService artistService;
 
     @GetMapping
-    @Operation(summary = "모든 아티스트 조회", description = "등록된 모든 아티스트 정보를 조회합니다.")
-    public ResponseEntity<ApiResponse<List<ArtistDTO>>> getAllArtists() {
-        List<ArtistDTO> artistDTOs = artistService.getAllArtists().stream()
+    @Operation(summary = "아티스트 검색", description = "활동 분야, 경력, 포트폴리오 유무로 아티스트를 검색합니다.")
+    public ResponseEntity<ApiResponse<List<ArtistDTO>>> searchArtists(
+            @RequestParam(value = "activityArea", required = false) String activityArea,
+            @RequestParam(value = "career", required = false) Integer career,
+            @RequestParam(value = "hasPortfolios", required = false) Boolean hasPortfolios) {
+        List<ArtistDTO> artistDTOs = artistService.searchArtists(activityArea, career, hasPortfolios).stream()
                 .map(ArtistDTO::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.onSuccess(artistDTOs));

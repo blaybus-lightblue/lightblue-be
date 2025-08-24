@@ -24,6 +24,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+
 @Service
 public class ArtistService {
 
@@ -41,8 +47,28 @@ public class ArtistService {
     @Autowired
     private PortfolioFileRepository portfolioFileRepository;
 
-    public List<Artist> getAllArtists() {
-        return artistRepository.findAll();
+    public List<Artist> searchArtists(String activityArea, Integer career, Boolean hasPortfolios) {
+        return artistRepository.findAll((Specification<Artist>) (root, query, cb) -> {
+            Predicate finalPredicate = cb.conjunction(); // Start with a true predicate
+
+            if (activityArea != null && !activityArea.isEmpty()) {
+                finalPredicate = cb.and(finalPredicate, cb.equal(root.get("activityArea"), activityArea));
+            }
+
+            if (career != null) {
+                finalPredicate = cb.and(finalPredicate, cb.greaterThanOrEqualTo(root.get("career"), career));
+            }
+
+            if (hasPortfolios != null) {
+                if (hasPortfolios) {
+                    finalPredicate = cb.and(finalPredicate, cb.isNotEmpty(root.get("portfolios")));
+                } else {
+                    finalPredicate = cb.and(finalPredicate, cb.isEmpty(root.get("portfolios")));
+                }
+            }
+
+            return finalPredicate;
+        });
     }
 
     public Optional<Artist> getArtistById(Long id) {
