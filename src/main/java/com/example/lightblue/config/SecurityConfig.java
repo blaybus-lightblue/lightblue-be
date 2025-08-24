@@ -1,8 +1,12 @@
 package com.example.lightblue.config;
 
+import com.example.lightblue.dto.AuthResponse;
+import com.example.lightblue.model.Account;
 import com.example.lightblue.repository.AccountRepository;
 import com.example.lightblue.service.JwtService;
 import com.example.lightblue.service.oauth2.CustomOAuth2UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,13 +23,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Map;
 
 @EnableMethodSecurity
 @Configuration
@@ -52,12 +59,42 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
+                        .successHandler(oauth2LoginSuccessHandler())
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+    @Bean
+    public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
+        return (request, response, authentication) -> {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+            String email = null;
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+
+            if (attributes.containsKey("response")) { // Naver
+                Map<String, Object> responseMap = (Map<String, Object>) attributes.get("response");
+                email = (String) responseMap.get("email");
+            } else { // Google
+                email = (String) attributes.get("email");
+            }
+
+            Account account = accountRepository.findByUsername(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            String token = jwtService.generateToken(account);
+            AuthResponse authResponse = new AuthResponse(token);
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(authResponse));
+            response.setStatus(HttpServletResponse.SC_OK);
+        };
+    }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

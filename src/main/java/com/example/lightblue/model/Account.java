@@ -1,14 +1,10 @@
 package com.example.lightblue.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,6 +32,12 @@ public class Account implements UserDetails {
 
     @Column(name = "account_type", nullable = false)
     private String accountType;
+
+    @Column(nullable = true)
+    private String nickname;
+
+    @Column(name = "profile_image", nullable = true)
+    private String profileImage;
 
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Artist artist;
