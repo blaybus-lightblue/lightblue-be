@@ -10,5 +10,5 @@ public class CompanyCreateRequest {
     private String email;
     private String phone;
     private String description;
-    private Long accountId;
+    
 }

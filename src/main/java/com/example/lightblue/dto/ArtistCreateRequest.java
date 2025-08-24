@@ -18,5 +18,5 @@ public class ArtistCreateRequest {
     private ProjectType activityField;
     private ProjectType desiredCollaborationField;
     private String introduction;
-    private Long accountId;
+    
 }

@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @Service
 public class CompanyService {
 
@@ -20,8 +23,14 @@ public class CompanyService {
 
     @Transactional
     public Company createCompany(CompanyCreateRequest companyDetails) {
-        Account account = accountRepository.findById(companyDetails.getAccountId())
-                .orElseThrow(() -> new RuntimeException("Account not found with id " + companyDetails.getAccountId()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated.");
+        }
+        Long accountId = ((Account) authentication.getPrincipal()).getId();
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id " + accountId));
 
         // Check if a Company already exists for this Account
         if (account.getCompany() != null) {
